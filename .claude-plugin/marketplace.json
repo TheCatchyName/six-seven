@@ -1,0 +1,6 @@
+{
+  "name": "six-seven",
+  "owner": { "name": "TheCatchyName" },
+  "description": "The six-seven mod: emoji burst on 67.",
+  "plugins": [{ "name": "six-seven", "source": "./", "description": "Bursts waving hands whenever 67 shows up in the chat." }]
+}
