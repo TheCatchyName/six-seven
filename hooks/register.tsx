@@ -16,16 +16,20 @@ const row = (f: number) =>
 
 let surface = 'terminal'
 let last = 0
+let ticking: { cancel: () => void } | undefined
 
 // id: a message id (burst drawn in that bubble) or 'band' (above the prompt).
 async function start($: EngineInterface, id: string) {
-  const now = await $.clock.now()
-  if (now - last < COOLDOWN) return
-  last = now
-  if (id !== 'band') await update($, seen, s => [...s.slice(-200), id])
+  // Cooldown only for the streaming band; each message bursts once anyway (seen).
+  if (id === 'band') {
+    const now = await $.clock.now()
+    if (now - last < COOLDOWN) return
+    last = now
+  } else await update($, seen, s => [...s.slice(-200), id])
   if (surface !== 'terminal' && surface !== 'desktop') return void $.ui.toast('🙌 6 7 🤲')
+  ticking?.cancel()
   await update($, burst, () => ({ id, frame: 0 }))
-  const tick = $.clock.every(200, () => {
+  const tick = (ticking = $.clock.every(200, () => {
     void update($, burst, b => {
       if (b.frame + 1 >= FRAMES) {
         tick.cancel()
@@ -33,7 +37,7 @@ async function start($: EngineInterface, id: string) {
       }
       return { ...b, frame: b.frame + 1 }
     })
-  })
+  }))
 }
 
 // Burst inside the bubble the first time a 67 message is on screen.
